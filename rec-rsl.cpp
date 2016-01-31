@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define version "1.0.0"
+#define version "1.1.0"
 
 #define MAX_PIN		16
 
@@ -25,12 +25,18 @@ using namespace std;
 #define BITS_NBR							32
 #define CODE_HIGH_POSITION					BITS_NBR - 1
 
+// 0.5 second
+#define AVOID_REPEAT_CODE_BELOW_USEC		500000
+
 static volatile int previousState = LOW_STATE;
 static struct timeval previousTime;
 static volatile int previousPulseLength = -1;
 static volatile int howManyCorrectPulses = 0;
 static volatile int positionInCode = CODE_HIGH_POSITION;
 static bitset<BITS_NBR> code = bitset<BITS_NBR>(0);
+
+static volatile unsigned long previousCode = 0;
+static struct timeval previousCodeTime;
 
 static int pin = -1;
 
@@ -108,7 +114,19 @@ void handleInterrupt( void )
 				&& currentState == LOW_STATE
 				&& positionInCode < 0 )
 			{
-				printf("%u\n" , code.to_ulong() );
+				unsigned long currentCode = code.to_ulong();
+
+				// Compute time since last code
+				unsigned long timeSinceLastCode = (currentTime.tv_sec * 1000000 + currentTime.tv_usec) - (previousCodeTime.tv_sec * 1000000 + previousCodeTime.tv_usec);
+
+				// Avoid to print several time the same code in a short delay
+				if( previousCode != currentCode || timeSinceLastCode > AVOID_REPEAT_CODE_BELOW_USEC )
+				{
+					printf( "%u\n" , currentCode );
+
+					previousCode = currentCode;
+					previousCodeTime = currentTime;
+				}
 			}
 
 			// Reset
