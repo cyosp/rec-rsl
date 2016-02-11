@@ -5,10 +5,11 @@
 #include <vector>		// vector
 #include <bitset>		// bitset
 #include <sys/time.h>	// gettimeofday
+#include <fstream>		// ofstream
 
 using namespace std;
 
-#define version "1.1.0"
+#define version "1.2.0"
 
 #define MAX_PIN		16
 
@@ -39,11 +40,13 @@ static volatile unsigned long previousCode = 0;
 static struct timeval previousCodeTime;
 
 static int pin = -1;
+static ofstream  * codesOFS = NULL;
 
 void usage( char ** argv )
 {
-  cout << "Usage: " << argv[0] << " v" << version << ": <pin number>" << endl
+  cout << "Usage: " << argv[0] << " v" << version << ": <pin number> [file to write codes]" << endl
   << " <pin number> wiringPi pin number" << endl
+  << " [file to write codes] Absolute file path where codes are written instead of stdout" << endl
   << endl;
 }
 
@@ -122,7 +125,10 @@ void handleInterrupt( void )
 				// Avoid to print several time the same code in a short delay
 				if( previousCode != currentCode || timeSinceLastCode > AVOID_REPEAT_CODE_BELOW_USEC )
 				{
-					printf( "%u\n" , currentCode );
+					// Code written on stdout
+					if( ! codesOFS ) cout         << currentCode << endl << flush;
+					// Code written to file
+					else             (* codesOFS) << currentCode << endl << flush;
 
 					previousCode = currentCode;
 					previousCodeTime = currentTime;
@@ -154,15 +160,22 @@ int main( int argc , char * argv[] )
 {
 	//
 	// Check input arguments
-	// Only 1 is managed
+	// Only 1 and 2 are managed
 	//
-	if( argc != 2 )
+	if( argc != 2 && argc != 3 )
 	{
 		usage( argv );
 		return 1;
 	}
 
 	pin = atoi( argv[1] );
+
+	// Open codes file
+	if( argc == 3 )
+	{
+		codesOFS = new ofstream();
+		codesOFS->open( argv[2] );
+	}
 
 	//
 	// Check input parameters

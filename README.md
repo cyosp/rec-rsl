@@ -1,7 +1,7 @@
 # rec-rsl
 Receive RSL 433MHz order code
 
-![Stable version](https://img.shields.io/badge/stable-1.1.0-blue.svg)
+![Stable version](https://img.shields.io/badge/stable-1.2.0-blue.svg)
 [![BSD-3 license](https://img.shields.io/badge/license-BSD--3--Clause-428F7E.svg)](https://tldrlegal.com/license/bsd-3-clause-license-%28revised%29)
 
 # How To Compile
@@ -43,19 +43,24 @@ sudo make install
 ## Command line
 
 ```bash
-sudo rec-rsl <pin number>
+sudo rec-rsl <pin number> [file to write codes]
 ```
 
 Arguments detailed:
  * pin number
 
 	[Raspberry Pi](https://www.raspberrypi.org/products/) pin following [wirinPi](http://wiringpi.com/) implementation
+ * file to write codes
+
+	Absolute file path where codes are written instead of stdout
 
 ## Examples
 
 ```bash
 # Receive RSL order codes with a 433MHz receiver connected to pin number 2
 sudo rec-rsl 2
+# Receive RSL order codes with a 433MHz receiver connected to pin number 2 and store them into /tmp/rec-rsl.log file
+sudo rec-rsl 2 /tmp/rec-rsl.log
 ```
 ## License
 
